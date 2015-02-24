@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module: org.netbeans.fsp
+OpenIDE-Module-Layer: org/netbeans/fsp/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/fsp/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

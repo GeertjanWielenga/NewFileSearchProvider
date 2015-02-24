@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="QuickSearch">
+        <folder name="File">
+            <attr name="command" stringvalue="f"/>
+            <attr name="position" intvalue="10"/>
+            <file name="org-netbeans-fsp-NewFileSearchProvider.instance">
+                <attr name="displayName" bundlevalue="org.netbeans.fsp.Bundle#QuickSearch/File/org-netbeans-fsp-NewFileSearchProvider.instance"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
