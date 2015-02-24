@@ -64,7 +64,7 @@ public class NewFileSearchProvider implements SearchProvider {
                                     JComponent jc = (JComponent) c;
                                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
                                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-                                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
+                                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, false);
                                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
                                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
                                 }
@@ -72,7 +72,7 @@ public class NewFileSearchProvider implements SearchProvider {
                             WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
                             wiz.putProperty(ProjectChooserFactory.WIZARD_KEY_TEMPLATE, item);
                             wiz.setTitleFormat(new MessageFormat("{0}"));
-                            wiz.setTitle("...dialog title...");
+                            wiz.setTitle("New " + item.getNameExt());
                             if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
                                 FileObject dir = Templates.getTargetFolder(wiz);
                                 DataFolder df = DataFolder.findFolder(dir);
