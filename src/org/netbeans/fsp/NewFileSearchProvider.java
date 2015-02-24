@@ -11,6 +11,7 @@ import javax.swing.JOptionPane;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
@@ -52,7 +53,7 @@ public class NewFileSearchProvider implements SearchProvider {
                             JOptionPane.showMessageDialog(null, "Select a project or file...");
                         }
                         if (project != null) {
-                            Sources sources = (Sources) project.getLookup().lookup(Sources.class);
+                            Sources sources = (Sources) ProjectUtils.getSources(project);
                             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                             List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
                             panels.add(JavaTemplates.createPackageChooser(project, groups));
