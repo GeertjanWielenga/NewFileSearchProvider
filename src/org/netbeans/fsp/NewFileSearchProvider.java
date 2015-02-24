@@ -1,6 +1,7 @@
 package org.netbeans.fsp;
 
 import java.awt.Component;
+import java.awt.HeadlessException;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -37,10 +38,40 @@ public class NewFileSearchProvider implements SearchProvider {
     public void evaluate(SearchRequest request, SearchResponse response) {
 
         for (final FileObject item : FileUtil.getOrder(Arrays.asList(getAllItemsToSearchIn().getChildren()), true)) {
+
             if (isConditionSatisfied(item)) {
+            
                 if (!response.addResult(new Runnable() {
                     @Override
                     public void run() {
+                        Project project = findProject();
+                        if (project != null) {
+                            createFile(defineWizard(project));
+                        }
+                    }
+
+                    private List<WizardDescriptor.Panel<WizardDescriptor>> defineWizard(Project project) throws IllegalArgumentException {
+                        Sources sources = (Sources) ProjectUtils.getSources(project);
+                        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+                        panels.add(JavaTemplates.createPackageChooser(project, groups));
+                        String[] steps = new String[panels.size()];
+                        for (int i = 0; i < panels.size(); i++) {
+                            Component c = panels.get(i).getComponent();
+                            steps[i] = c.getName();
+                            if (c instanceof JComponent) {
+                                JComponent jc = (JComponent) c;
+                                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
+                                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
+                                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
+                                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
+                            }
+                        }
+                        return panels;
+                    }
+
+                    private Project findProject() throws HeadlessException {
                         Project project = Utilities.actionsGlobalContext().lookup(Project.class);
                         if (project == null) {
                             FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
@@ -52,48 +83,37 @@ public class NewFileSearchProvider implements SearchProvider {
                         } else {
                             JOptionPane.showMessageDialog(null, "Select a project or file...");
                         }
-                        if (project != null) {
-                            Sources sources = (Sources) ProjectUtils.getSources(project);
-                            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                            List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-                            panels.add(JavaTemplates.createPackageChooser(project, groups));
-                            String[] steps = new String[panels.size()];
-                            for (int i = 0; i < panels.size(); i++) {
-                                Component c = panels.get(i).getComponent();
-                                steps[i] = c.getName();
-                                if (c instanceof JComponent) {
-                                    JComponent jc = (JComponent) c;
-                                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
-                                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-                                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, false);
-                                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
-                                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
-                                }
-                            }
-                            WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
-                            wiz.putProperty(ProjectChooserFactory.WIZARD_KEY_TEMPLATE, item);
-                            wiz.setTitleFormat(new MessageFormat("{0}"));
-                            wiz.setTitle("New " + item.getNameExt());
-                            if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-                                FileObject dir = Templates.getTargetFolder(wiz);
-                                DataFolder df = DataFolder.findFolder(dir);
-                                FileObject template = Templates.getTemplate(wiz);
-                                try {
-                                    DataObject dTemplate = DataObject.find(template);
-                                    DataObject object = dTemplate.createFromTemplate(df, Templates.getTargetName(wiz));
-                                    object.getLookup().lookup(OpenCookie.class).open();
-                                } catch (DataObjectNotFoundException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
+                        return project;
+                    }
+
+                    private void createFile(List<WizardDescriptor.Panel<WizardDescriptor>> panels) {
+                        WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
+                        wiz.putProperty(ProjectChooserFactory.WIZARD_KEY_TEMPLATE, item);
+                        wiz.setTitleFormat(new MessageFormat("{0}"));
+                        wiz.setTitle("New " + item.getNameExt());
+                        if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
+                            FileObject dir = Templates.getTargetFolder(wiz);
+                            DataFolder df = DataFolder.findFolder(dir);
+                            FileObject template = Templates.getTemplate(wiz);
+                            try {
+                                DataObject dTemplate = DataObject.find(template);
+                                DataObject object = dTemplate.createFromTemplate(df, Templates.getTargetName(wiz));
+                                object.getLookup().lookup(OpenCookie.class).open();
+                            } catch (DataObjectNotFoundException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
                         }
+                        
                     }
+                    
                 }, item.getNameExt())) {
                     break;
                 }
+                
             }
+            
         }
 
     }
